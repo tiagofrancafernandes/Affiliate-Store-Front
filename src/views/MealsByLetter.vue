@@ -8,6 +8,9 @@
       v-for="letter of letters"
       :key="letter"
       class="w-2 h-2 flex items-center justify-center hover:text-orange-500 hover:scale-150 transition-all"
+      v-bind:class="{
+          'font-bold text-orange-500 scale-150': letter == currentLetter(),
+      }"
     >
       {{ letter }}
     </router-link>
@@ -34,4 +37,6 @@ watch(route, () => {
 onMounted(() => {
   store.dispatch("searchMealsByLetter", route.params.letter);
 });
+
+let currentLetter = () => route.params.letter;
 </script>
