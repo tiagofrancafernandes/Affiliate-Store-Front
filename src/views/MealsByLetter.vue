@@ -16,27 +16,68 @@
     </router-link>
   </div>
 
-  <Meals :meals="meals" />
+  <Meals
+    :meals="meals"
+    :isLoading="isLoading"
+  />
+
+  <div class="relative rounded-xl overflow-auto p-8">
+    <div class="flex items-center justify-center">
+      <CustomButton
+        v-on:click="loadMore()"
+        class="cursor-pointer"
+        v-if="meals.length && !isLoading"
+      >
+          Load more...
+      </CustomButton>
+    </div>
+  </div>
 </template>
 
 <script setup>
 import { computed } from "@vue/reactivity";
-import { onMounted, watch } from "vue";
+import { onMounted, watch, ref, } from "vue";
 import { useRoute } from "vue-router";
 import store from "../store";
 import Meals from "../components/Meals.vue";
+import CustomButton from "../components/parts/Button.vue";
 
 const route = useRoute();
 const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 const meals = computed(() => store.state.mealsByLetter);
+const isLoading = computed(() => store.state.loading);
 
 watch(route, () => {
-  store.dispatch("searchMealsByLetter", route.params.letter);
+  store.dispatch("searchMealsByLetter", {
+    letter: route.params.letter,
+    pageNumber: 1,
+    toAppend: false,
+  });
 });
 
 onMounted(() => {
-  store.dispatch("searchMealsByLetter", route.params.letter);
+  store.dispatch("searchMealsByLetter", {
+    letter: route.params.letter,
+    pageNumber: 1,
+    toAppend: false,
+  });
 });
 
 let currentLetter = () => route.params.letter;
+let pageNumber = ref(1);
+
+const getPageNumberAndIncrement = () => {
+  let current = parseInt(pageNumber.value);
+  pageNumber.value = current + 1;
+  return current;
+};
+
+const loadMore = () => {
+  let pageNumber = getPageNumberAndIncrement();
+  store.dispatch("searchMealsByLetter", {
+    letter: route.params.letter,
+    pageNumber: pageNumber,
+    toAppend: true,
+  });
+}
 </script>
